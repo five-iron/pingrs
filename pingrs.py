@@ -58,7 +58,7 @@ if __name__ == '__main__':
                        help='number of worker processes to spawn (default: os.cpu_count())')
     parser.add_argument('-v', '--verbose', action="store_true",
                        help='print verbose output')
-    parser.add_argument('-d', '--distinguish', type=str, nargs='+',
+    parser.add_argument('-d', '--distinguish', type=str, nargs='+', default=[],
                        help='distinguish worlds in output')
     args = parser.parse_args()
     # 108 worlds listed here
