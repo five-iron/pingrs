@@ -1,6 +1,6 @@
 # pingrs
 Ping Runescape worlds using parallel processing
-
+<pre>
 $ python pingrs.py -h
 usage: pingrs.py [-h] [-p PINGS] [-b BATCHES] [-w WORKERS] [-v]
                  [-d DISTINGUISH [DISTINGUISH ...]]
@@ -19,3 +19,4 @@ optional arguments:
   -v, --verbose         print verbose output
   -d DISTINGUISH [DISTINGUISH ...], --distinguish DISTINGUISH [DISTINGUISH ...]
                         distinguish worlds in output
+</pre>
