@@ -7,8 +7,8 @@ def ping(args):
     world = args['world']
     results = args['results']
     numPings = args['numPings']
-    verbose = args['verbose']
-    if verbose:
+    verbosity = args['verbosity']
+    if verbosity is 2:
         print('Begin ping for World {}'.format(world))
     try:
         response = str(subprocess.check_output("ping -n {} world{}.runescape.com".format(numPings, world), shell=False))
@@ -28,7 +28,7 @@ def ping(args):
             'maxTime': int(maxTime),
             'avgTime': int(avgTime)
         })
-    if verbose:
+    if verbosity is 2:
         print('World {} Average: {}ms'.format(world, avgTime))
 
 def handleNonZeroExit(e):
@@ -58,8 +58,8 @@ if __name__ == '__main__':
                        help='number of batches (default: 4)')
     parser.add_argument('-w', '--workers', type=int, default=None,
                        help='number of worker processes to spawn (default: os.cpu_count())')
-    parser.add_argument('-v', '--verbose', action="store_true",
-                       help='print verbose output')
+    parser.add_argument('-v', '--verbosity', type=int, default=0,
+                       help='set verbosity level')
     parser.add_argument('-d', '--distinguish', type=str, nargs='+', default=[],
                        help='distinguish worlds in output')
     parser.add_argument('worlds', type=int, nargs='*', default=allWorlds,
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     numPings = args.pings
     batches = args.batches
     numWorkers = args.workers
-    verbose = args.verbose
+    verbosity = args.verbosity
 
     manager = Manager()
     p = Pool(numWorkers)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         # KeyboardInterrupt is finnicky... if all else fails:
         # taskkill /F /IM python.exe
         # kills all python processes on Windows
-        p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings, 'verbose': verbose} for world in worlds]).get(999999)
+        p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings, 'verbosity': verbosity} for world in worlds]).get(999999)
         sortedresults = sorted(results, key=itemgetter('avgTime'), reverse=True)
         resultTable = ''
         for j, item in enumerate(sortedresults):
@@ -105,12 +105,14 @@ if __name__ == '__main__':
                 rowBuilder += '\n'
             resultTable += rowBuilder
         print(resultTable)
-        if batches > 1:
-            print('{}/{} batches'.format(i+1, batches))
-        batchTime = time.time() - start;
-        if batches > 1:
-            print('{:.3f}s'.format(batchTime))
+        if verbosity >= 1:
+            if batches > 1:
+                print('{}/{} batches'.format(i+1, batches))
+            batchTime = time.time() - start;
+            if batches > 1:
+                print('{:.3f}s'.format(batchTime))
+            totalTime += batchTime
         print()
-        totalTime += batchTime
-    print('----\n')
-    print('Total time: {:.3f}s'.format(totalTime))
+    if verbosity >= 1:
+        print('----\n')
+        print('Total time: {:.3f}s'.format(totalTime))

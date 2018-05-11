@@ -5,7 +5,7 @@ Tested with Python 3.5.0.
 
 <pre>
 $ python pingrs.py -h
-usage: pingrs.py [-h] [-p PINGS] [-b BATCHES] [-w WORKERS] [-v]
+usage: pingrs.py [-h] [-p PINGS] [-b BATCHES] [-w WORKERS] [-v VERBOSITY]
                  [-d DISTINGUISH [DISTINGUISH ...]]
                  [worlds [worlds ...]]
 
@@ -23,7 +23,8 @@ optional arguments:
   -w WORKERS, --workers WORKERS
                         number of worker processes to spawn (default:
                         os.cpu_count())
-  -v, --verbose         print verbose output
+  -v VERBOSITY, --verbosity VERBOSITY
+                        set verbosity level
   -d DISTINGUISH [DISTINGUISH ...], --distinguish DISTINGUISH [DISTINGUISH ...]
                         distinguish worlds in output
 </pre>
@@ -31,21 +32,11 @@ optional arguments:
 Example usage:
 <pre>
 $ python pingrs.py 104 -b 3 -p 2
-    World 104: Min=  8, Max= 12, Avg= 10
-1/3 batches
-1.145s
+    World 104: Min= 26, Max= 36, Avg= 31
 
-    World 104: Min=  5, Max=  7, Avg=  6
-2/3 batches
-1.028s
+    World 104: Min= 19, Max= 20, Avg= 19
 
-    World 104: Min=  4, Max=  6, Avg=  5
-3/3 batches
-1.027s
-
-----
-
-Total time: 3.200s
+    World 104: Min=  6, Max=  9, Avg=  7
 </pre>
 
 Ping values are in milliseconds.
@@ -163,7 +154,5 @@ $ python pingrs.py
     World 116: Ping=  4
     World  46: Ping=  3
 
-1/4 batches
-1.640s
 ...
 </pre>
