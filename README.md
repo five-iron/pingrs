@@ -7,15 +7,19 @@ Tested with Python 3.5.0.
 $ python pingrs.py -h
 usage: pingrs.py [-h] [-p PINGS] [-b BATCHES] [-w WORKERS] [-v]
                  [-d DISTINGUISH [DISTINGUISH ...]]
+                 [worlds [worlds ...]]
 
 Ping Runescape worlds.
+
+positional arguments:
+  worlds                worlds to ping
 
 optional arguments:
   -h, --help            show this help message and exit
   -p PINGS, --pings PINGS
                         number of pings for each batch (default: 1)
   -b BATCHES, --batches BATCHES
-                        number of batches (default: 10)
+                        number of batches (default: 4)
   -w WORKERS, --workers WORKERS
                         number of worker processes to spawn (default:
                         os.cpu_count())
@@ -24,7 +28,29 @@ optional arguments:
                         distinguish worlds in output
 </pre>
 
-All arguments are optional. Example default output:
+Example usage:
+<pre>
+$ python pingrs.py 104 -b 3 -p 2
+    World 104: Min=  8, Max= 12, Avg= 10
+1/3 batches
+1.145s
+
+    World 104: Min=  5, Max=  7, Avg=  6
+2/3 batches
+1.028s
+
+    World 104: Min=  4, Max=  6, Avg=  5
+3/3 batches
+1.027s
+
+----
+
+Total time: 3.200s
+</pre>
+
+Ping values are in milliseconds.
+
+All arguments are optional. By default, it will ping all worlds four times:
 
 <pre>
 $ python pingrs.py
@@ -137,7 +163,7 @@ $ python pingrs.py
     World 116: Ping=  4
     World  46: Ping=  3
 
-1/10 batches
+1/4 batches
 1.640s
 ...
 </pre>
