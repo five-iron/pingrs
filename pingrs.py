@@ -60,7 +60,7 @@ if __name__ == '__main__':
                        help='number of worker processes to spawn (default: os.cpu_count())')
     parser.add_argument('-v', '--verbosity', type=int, default=0,
                        help='set verbosity level')
-    parser.add_argument('-d', '--distinguish', type=str, nargs='+', default=[],
+    parser.add_argument('-d', '--distinguish', type=int, nargs='+', default=[],
                        help='distinguish worlds in output')
     parser.add_argument('worlds', type=int, nargs='*', default=allWorlds,
                        help='worlds to ping')
