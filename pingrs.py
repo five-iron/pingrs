@@ -48,8 +48,10 @@ if __name__ == '__main__':
     from multiprocessing import Pool, Lock, Manager
     from operator import itemgetter
     import argparse
-    # 108 worlds listed here
-    allWorlds = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,51,52,53,54,55,56,57,58,59,60,61,62,65,66,67,68,69,70,73,74,75,76,77,78,81,82,83,84,85,86,94,96,97,98,99,100,101,102,103,104,105,106,111,114,115,116,117,118,119,120,121,122,123,124,134,135,136,137,138,139,140]
+    # 93 members
+    memberWorlds = [1,2,4,5,6,9,10,12,14,16,18,21,22,23,24,25,26,27,28,30,31,32,35,36,37,39,40,42,44,45,46,47,48,51,52,53,54,56,58,59,60,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,82,83,84,85,86,87,88,89,91,92,96,97,98,99,100,102,103,104,105,106,114,115,116,117,118,119,121,123,124,134,137,138,139,140]
+    # 25 non-members
+    nonMemberWorlds = [3,7,8,11,17,19,20,29,33,34,38,41,43,55,57,61,80,81,94,101,120,122,135,136,141]
     
     parser = argparse.ArgumentParser(description='Ping Runescape worlds.')
     parser.add_argument('-p', '--pings', type=int, default=1,
@@ -62,11 +64,16 @@ if __name__ == '__main__':
                        help='set verbosity level')
     parser.add_argument('-d', '--distinguish', type=int, nargs='+', default=[],
                        help='distinguish worlds in output')
-    parser.add_argument('worlds', type=int, nargs='*', default=allWorlds,
+    parser.add_argument('worlds', type=int, nargs='*', default=memberWorlds,
                        help='worlds to ping')
+    parser.add_argument('--all-worlds', action="store_true",
+                       help='ping all worlds (include non-members)')
     args = parser.parse_args()
     
-    worlds = args.worlds
+    if args.all_worlds is True:
+        worlds = memberWorlds + nonMemberWorlds
+    else:
+        worlds = args.worlds
     distinguishedWorlds = args.distinguish
     numPings = args.pings
     batches = args.batches
