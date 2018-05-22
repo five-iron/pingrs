@@ -1,8 +1,5 @@
 import re, subprocess, time
 
-# TODO
-# world metadata (members/non at the very least)
-
 def ping(args):
     world = args['world']
     results = args['results']
@@ -11,12 +8,17 @@ def ping(args):
     if verbosity is 2:
         print('Begin ping for World {}'.format(world))
     try:
-        response = str(subprocess.check_output("ping -n {} world{}.runescape.com".format(numPings, world), shell=False))
-        parsed = re.search('Minimum = (\d+)ms, Maximum = (\d+)ms, Average = (\d+)ms', response)
-        fullResult = parsed.group(0)
-        minTime = parsed.group(1)
-        maxTime = parsed.group(2)
-        avgTime = parsed.group(3)
+        pings = []
+        for i in range(numPings):
+            cmd = "ping -n 1 world{}.runescape.com".format(world)
+            response = str(subprocess.check_output(cmd, shell=False))
+            parsed = re.search('Minimum = (\d+)ms', response)
+            pingTime = parsed.group(1)
+            pings.append(int(pingTime))
+        minTime = min(pings)
+        maxTime = max(pings)
+        fullResult = pings
+        avgTime = float(sum(pings))/len(pings)
     except subprocess.CalledProcessError as e:
         fullResult = handleNonZeroExit(e)
         minTime = maxTime = avgTime = -1
@@ -24,9 +26,9 @@ def ping(args):
         results.append({
             'world': world,
             'fullResult': fullResult,
-            'minTime': int(minTime),
-            'maxTime': int(maxTime),
-            'avgTime': int(avgTime)
+            'minTime': minTime,
+            'maxTime': maxTime,
+            'avgTime': avgTime
         })
     if verbosity is 2:
         print('World {} Average: {}ms'.format(world, avgTime))
@@ -56,13 +58,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Ping Runescape worlds.')
     parser.add_argument('-p', '--pings', type=int, default=1,
                        help='number of pings for each batch (default: 1)')
-    parser.add_argument('-b', '--batches', type=int, default=4,
-                       help='number of batches (default: 4)')
     parser.add_argument('-w', '--workers', type=int, default=None,
                        help='number of worker processes to spawn (default: os.cpu_count())')
     parser.add_argument('-v', '--verbosity', type=int, default=0,
                        help='set verbosity level')
-    parser.add_argument('-d', '--distinguish', type=int, nargs='+', default=[],
+    parser.add_argument('-d', '--distinguish', type=int, action='append', default=[],
                        help='distinguish worlds in output')
     parser.add_argument('worlds', type=int, nargs='*', default=memberWorlds,
                        help='worlds to ping')
@@ -76,50 +76,43 @@ if __name__ == '__main__':
         worlds = args.worlds
     distinguishedWorlds = args.distinguish
     numPings = args.pings
-    batches = args.batches
     numWorkers = args.workers
     verbosity = args.verbosity
 
     manager = Manager()
     p = Pool(numWorkers)
-    totalTime = 0
-    for i in range(batches):
-        start = time.time()
-        results = manager.list()
-        # https://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
-        # KeyboardInterrupt is finnicky... if all else fails:
-        # taskkill /F /IM python.exe
-        # kills all python processes on Windows
-        p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings, 'verbosity': verbosity} for world in worlds]).get(999999)
-        sortedresults = sorted(results, key=itemgetter('avgTime'), reverse=True)
-        resultTable = ''
-        for j, item in enumerate(sortedresults):
-            rowBuilder = ''
-            if item['world'] in distinguishedWorlds:
-                rowBuilder += '--->'
-            else:
-                rowBuilder += '    '
-            rowBuilder += 'World ' + (str(item['world'])).rjust(3) + ': '
-            if numPings is 1:
-                rowBuilder += 'Ping=' + (str(item['avgTime'])).rjust(3)
-            else:
-                rowBuilder += 'Min=' + (str(item['minTime'])).rjust(3) + ', '
-                rowBuilder += 'Max=' + (str(item['maxTime'])).rjust(3) + ', '
-                rowBuilder += 'Avg=' + (str(item['avgTime'])).rjust(3)
-            if item['avgTime'] is -1:
-                rowBuilder += ', Error=' + (str(item['fullResult'])).rjust(3)
-            if j < len(sortedresults) - 1:
-                rowBuilder += '\n'
-            resultTable += rowBuilder
-        print(resultTable)
-        if verbosity >= 1:
-            if batches > 1:
-                print('{}/{} batches'.format(i+1, batches))
-            batchTime = time.time() - start;
-            if batches > 1:
-                print('{:.3f}s'.format(batchTime))
-            totalTime += batchTime
-        print()
+    start = time.time()
+    results = manager.list()
+    # https://stackoverflow.com/questions/1408356/keyboard-interrupts-with-pythons-multiprocessing-pool
+    # KeyboardInterrupt is finnicky... if all else fails:
+    # taskkill /F /IM python.exe
+    # kills all python processes on Windows
+    p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings, 'verbosity': verbosity} for world in worlds]).get(999999)
+    sortedresults = sorted(results, key=itemgetter('avgTime'), reverse=True)
+    resultTable = ''
+    for j, item in enumerate(sortedresults):
+        rowBuilder = ''
+        if item['world'] in distinguishedWorlds:
+            rowBuilder += '--->'
+        else:
+            rowBuilder += '    '
+        rowBuilder += 'World ' + (str(item['world'])).rjust(3) + ': '
+        if numPings is 1:
+            rowBuilder += 'Ping=' + (str(item['minTime'])).rjust(3)
+        else:
+            rowBuilder += 'Min=' + (str(item['minTime'])).rjust(3) + ', '
+            rowBuilder += 'Max=' + (str(item['maxTime'])).rjust(3) + ', '
+            rowBuilder += 'Avg=' + ('{:.2f}'.format(item['avgTime'])).rjust(3)
+            if verbosity >= 1:
+                rowBuilder += ', All=' + (str(item['fullResult'])).rjust(3)
+        if item['avgTime'] is -1:
+            rowBuilder += ', Error=' + (str(item['fullResult'])).rjust(3)
+        if j < len(sortedresults) - 1:
+            rowBuilder += '\n'
+        resultTable += rowBuilder
+    print(resultTable)
     if verbosity >= 1:
+        totalTime = time.time() - start;
+        print()
         print('----\n')
         print('Total time: {:.3f}s'.format(totalTime))
