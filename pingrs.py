@@ -102,11 +102,11 @@ if __name__ == '__main__':
         else:
             rowBuilder += 'Min=' + (str(item['minTime'])).rjust(3) + ', '
             rowBuilder += 'Max=' + (str(item['maxTime'])).rjust(3) + ', '
-            rowBuilder += 'Avg=' + ('{:.2f}'.format(item['avgTime'])).rjust(3)
-            if verbosity >= 1:
-                rowBuilder += ', All=' + (str(item['fullResult'])).rjust(3)
+            rowBuilder += 'Avg=' + ('{:.2f}'.format(item['avgTime'])).rjust(6)
         if item['avgTime'] is -1:
-            rowBuilder += ', Error=' + (str(item['fullResult'])).rjust(3)
+            rowBuilder += ', Error=' + (str(item['fullResult']))
+        elif verbosity >= 1:
+            rowBuilder += ', All=' + (str(item['fullResult']))
         if j < len(sortedresults) - 1:
             rowBuilder += '\n'
         resultTable += rowBuilder
