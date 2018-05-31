@@ -37,7 +37,7 @@ $ python pingrs.py 104 -p 2
 
 Ping values are in milliseconds.
 
-All arguments are optional. By default, it will ping all members worlds four times:
+All arguments are optional. By default, it will ping all members worlds once:
 
 <pre>
 $ python pingrs.py
