@@ -5,20 +5,23 @@ def ping(args):
     results = args['results']
     numPings = args['numPings']
     verbosity = args['verbosity']
+    countArg = args['countArg']
+    minTime = maxTime = avgTime = 0
+    fullResult = []
     if verbosity is 2:
         print('Begin ping for World {}'.format(world))
     try:
         pings = []
         for i in range(numPings):
-            cmd = "ping -n 1 world{}.runescape.com".format(world)
-            response = str(subprocess.check_output(cmd, shell=False))
+            cmd = "ping -{} 1 world{}.runescape.com".format(countArg, world)
+            response = str(subprocess.check_output(cmd.split(), shell=False))
             parsed = re.search('Minimum = (\d+)ms', response)
             pingTime = parsed.group(1)
             pings.append(int(pingTime))
         minTime = min(pings)
         maxTime = max(pings)
-        fullResult = pings
         avgTime = float(sum(pings))/len(pings)
+        fullResult = pings
     except subprocess.CalledProcessError as e:
         fullResult = handleNonZeroExit(e)
         minTime = maxTime = avgTime = -1
@@ -38,12 +41,16 @@ def handleNonZeroExit(e):
     loss = re.search('\d+% loss', output)
     if loss is not None:
         msg = loss.group(0)
-    else:
-        noHost = re.search('could not find host', output)
-        if noHost is not None:
-            msg = "no host"
-        else:
-            msg = "unknown error: " + output
+        return msg
+    noHost = re.search('could not find host', output)
+    if noHost is not None:
+        msg = "no host"
+        return msg
+    badOption = re.search('Bad option|Invalid argument', output)
+    if badOption is not None:
+        msg = "Add -l if on linux"
+        return msg
+    msg = "unknown error: " + output
     return msg
     
 if __name__ == '__main__':
@@ -64,6 +71,8 @@ if __name__ == '__main__':
                        help='set verbosity level')
     parser.add_argument('-d', '--distinguish', type=int, action='append', default=[],
                        help='distinguish worlds in output')
+    parser.add_argument('-l', '--linux', action='store_true',
+                       help='use -c for ping count (linux)')
     parser.add_argument('worlds', type=int, nargs='*', default=memberWorlds,
                        help='worlds to ping')
     parser.add_argument('--all-worlds', action="store_true",
@@ -78,6 +87,7 @@ if __name__ == '__main__':
     numPings = args.pings
     numWorkers = args.workers
     verbosity = args.verbosity
+    countArg = 'c' if args.linux else 'n'
 
     manager = Manager()
     p = Pool(numWorkers)
@@ -87,7 +97,8 @@ if __name__ == '__main__':
     # KeyboardInterrupt is finnicky... if all else fails:
     # taskkill /F /IM python.exe
     # kills all python processes on Windows
-    p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings, 'verbosity': verbosity} for world in worlds]).get(999999)
+    p.map_async(ping, [{'results': results, 'world': world, 'numPings': numPings,
+                        'verbosity': verbosity, 'countArg': countArg} for world in worlds]).get(999999)
     sortedresults = sorted(results, key=itemgetter('avgTime'), reverse=True)
     resultTable = ''
     for j, item in enumerate(sortedresults):
