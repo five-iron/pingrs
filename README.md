@@ -5,8 +5,8 @@ Tested with Python 3.5.0.
 
 <pre>
 $ python pingrs.py -h
-usage: pingrs.py [-h] [-p PINGS] [-w WORKERS] [-v VERBOSITY]
-                 [-d DISTINGUISH [DISTINGUISH ...]] [--all-worlds]
+usage: pingrs.py [-h] [-p PINGS] [-w WORKERS] [-v VERBOSITY] [-d DISTINGUISH]
+                 [-l] [--all-worlds]
                  [worlds [worlds ...]]
 
 Ping Runescape worlds.
@@ -23,8 +23,9 @@ optional arguments:
                         os.cpu_count())
   -v VERBOSITY, --verbosity VERBOSITY
                         set verbosity level
-  -d DISTINGUISH [DISTINGUISH ...], --distinguish DISTINGUISH [DISTINGUISH ...]
+  -d DISTINGUISH, --distinguish DISTINGUISH
                         distinguish worlds in output
+  -l, --linux           use -c for ping count (linux)
   --all-worlds          ping all worlds (include non-members)
 </pre>
 
