@@ -124,6 +124,6 @@ if __name__ == '__main__':
     print(resultTable)
     if verbosity >= 1:
         totalTime = time.time() - start;
-        print()
+        print('')
         print('----\n')
         print('Total time: {:.3f}s'.format(totalTime))
